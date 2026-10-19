@@ -31,7 +31,7 @@ const params=new URLSearchParams(location.search),token=params.get('token')||'',
 const statusEl=document.getElementById('status'),installWrap=document.getElementById('install-wrap'),dictationWrap=document.getElementById('dictation-wrap'),fallback=document.getElementById('fallback'),transcriptEl=document.getElementById('transcript');
 let recognition=null,listening=false,SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function setStatus(text,error=false){statusEl.textContent=text;statusEl.classList.toggle('error',error)}
-function allowedReturnUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='script.google.com'&&/^\/macros\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)}catch(e){return false}}
+function allowedReturnUrl(value){try{const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='script.google.com')return false;return /^\/macros\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)||/^\/macros\/u\/\d+\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)||/^\/a\/macros\/[^/]+\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)}catch(e){return false}}
 function unavailable(message){setStatus(message,true);fallback.classList.remove('hidden');installWrap.classList.add('hidden');dictationWrap.classList.add('hidden')}
 async function prepare(){if(!token||token.length>200||!allowedReturnUrl(returnUrl)){unavailable('Esta página debe abrirse desde el portal de Entrevistas. Cierra esta pestaña y vuelve al botón “Dictar”.');return}
   if(!SR){unavailable('Este navegador no ofrece reconocimiento de voz local compatible. Prueba con Chrome actualizado.');return}
