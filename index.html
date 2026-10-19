@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-<header><strong>Dictado · Entrevistas Liceo</strong></header>
+<header><strong>Dictado · Entrevistas Liceo</strong><small style="display:block;opacity:.75;margin-top:4px">Auxiliar v26</small></header>
 <main><section class="card">
   <h1>Dicta tu comentario</h1>
   <p class="muted">Habla con claridad y pausas. Puedes dictar varias veces; cada fragmento se agrega al texto. Al terminar, regresa el texto al campo que estabas llenando.</p>
@@ -31,9 +31,9 @@ const params=new URLSearchParams(location.search),token=params.get('token')||'',
 const statusEl=document.getElementById('status'),installWrap=document.getElementById('install-wrap'),dictationWrap=document.getElementById('dictation-wrap'),fallback=document.getElementById('fallback'),transcriptEl=document.getElementById('transcript');
 let recognition=null,listening=false,SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function setStatus(text,error=false){statusEl.textContent=text;statusEl.classList.toggle('error',error)}
-function allowedReturnUrl(value){try{const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='script.google.com')return false;return /^\/macros\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)||/^\/macros\/u\/\d+\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)||/^\/a\/macros\/[^/]+\/s\/[A-Za-z0-9_-]+\/(exec|dev)$/.test(u.pathname)}catch(e){return false}}
+function allowedReturnUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='script.google.com'&&!u.username&&!u.password&&u.pathname.includes('/macros/')&&/\/(exec|dev)\/?$/.test(u.pathname)}catch(e){return false}}
 function unavailable(message){setStatus(message,true);fallback.classList.remove('hidden');installWrap.classList.add('hidden');dictationWrap.classList.add('hidden')}
-async function prepare(){if(!token||token.length>200||!allowedReturnUrl(returnUrl)){unavailable('Esta página debe abrirse desde el portal de Entrevistas. Cierra esta pestaña y vuelve al botón “Dictar”.');return}
+async function prepare(){if(!token||token.length>200||!allowedReturnUrl(returnUrl)){unavailable('No recibí una dirección de regreso válida del portal. Cierra esta pestaña y vuelve al botón “Dictar”.');return}
   if(!SR){unavailable('Este navegador no ofrece reconocimiento de voz local compatible. Prueba con Chrome actualizado.');return}
   if(typeof SR.available!=='function'||typeof SR.install!=='function'){unavailable('El navegador no permite comprobar e instalar el paquete local de español. No se enviará audio a servicios externos.');return}
   try{const availability=await SR.available({langs:['es-MX'],processLocally:true});if(availability==='available'){dictationWrap.classList.remove('hidden');setStatus('Listo. Pulsa “Iniciar dictado” y permite el micrófono cuando el navegador lo solicite.')}else if(availability==='downloadable'){installWrap.classList.remove('hidden');setStatus('Falta el paquete local de español. Instálalo para continuar.')}else{unavailable('No hay un paquete de reconocimiento local disponible para español (México) en este navegador.')}}catch(e){unavailable('No pude comprobar el paquete local de español: '+(e.message||'error del navegador'))}}
